@@ -3,5 +3,7 @@
 
 Licensed under the MIT license.
 
+![](oldboosters.gif)
+
 Based off of @Exalm's [olddays](https://github.com/Exalm/Minecraft-mods) mod
 and @jpmac26's [OldDaysRevisited](https://github.com/jpmac26/OldDaysRevisited)
