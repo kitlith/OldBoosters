@@ -1,0 +1,5 @@
+# Config GUI strings
+oldboosters.config.title=Old Boosters Config
+
+oldboosters.general.defaultBoosters=Default Boosters
+oldboosters.general.defaultBoosters.tooltip=This option decides whether new minecarts are boosters or not.

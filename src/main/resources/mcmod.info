@@ -1,0 +1,16 @@
+[
+{
+  "modid": "oldboosters",
+  "name": "Old Boosters Mod",
+  "description": "Bring back the old minecart boosters.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "https://github.com/kitlith/OldBoosters",
+  "updateUrl": "",
+  "authors": ["Kitlith"],
+  "credits": "The sponge project, for creating mixin and Exalm, for creating the original OldDays mod.",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
