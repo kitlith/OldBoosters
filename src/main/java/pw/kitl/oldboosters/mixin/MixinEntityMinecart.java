@@ -24,17 +24,18 @@ public abstract class MixinEntityMinecart extends Entity {
     }
 
     private boolean boosterEnabled = OldBoostersConfig.defaultBoosters;
+    private boolean capRemoved = OldBoostersConfig.defaultRemoveCap;
 
     @Inject(method = "readEntityFromNBT", at = @At("HEAD"))
     protected void readEntityFromNBT(NBTTagCompound compound, CallbackInfo ci) {
         boosterEnabled = compound.getBoolean("EnableBoosters");
+        capRemoved = compound.getBoolean("RemoveCap");
     }
 
     @Inject(method = "writeEntityToNBT", at = @At("HEAD"))
     protected void writeEntityToNBT(NBTTagCompound compound, CallbackInfo ci) {
-        if (boosterEnabled) {
-            compound.setBoolean("EnableBoosters", true);
-        }
+        compound.setBoolean("EnableBoosters", boosterEnabled);
+        compound.setBoolean("RemoveCap", capRemoved);
     }
 
     @ModifyConstant(method = "applyEntityCollision", constant = @Constant(doubleValue = 0.800000011920929D))
@@ -54,13 +55,14 @@ public abstract class MixinEntityMinecart extends Entity {
     //         return origConst;
     //     }
     // }
-    //
-    // @ModifyConstant(method = "moveAlongTrack", constant = @Constant(doubleValue = 2.0D, ordinal = 0))
-    // private double removeCap(double origConst) {
-    //     if (boosterEnabled) {
-    //         return Double.POSITIVE_INFINITY;
-    //     } else {
-    //         return origConst;
-    //     }
-    // }
+
+    // This lack of cap is what made the original boosters so effective, going a long distance.
+    @ModifyConstant(method = "moveAlongTrack", constant = @Constant(doubleValue = 2.0D, ordinal = 0))
+    private double removeCap(double origConst) {
+        if (capRemoved) {
+            return Double.POSITIVE_INFINITY;
+        } else {
+            return origConst;
+        }
+    }
 }

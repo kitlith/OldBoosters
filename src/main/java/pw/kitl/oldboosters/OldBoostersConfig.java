@@ -12,6 +12,8 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 public class OldBoostersConfig {
     @Config.Comment("Will new minecarts be boosters by default?")
     public static boolean defaultBoosters = true;
+    @Config.Comment("Will new minecarts not have a speed cap by default?")
+    public static boolean defaultRemoveCap = true;
 
     @Mod.EventBusSubscriber
 	private static class EventHandler {
