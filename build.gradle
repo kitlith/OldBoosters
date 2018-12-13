@@ -61,15 +61,21 @@ shadowJar {
         include(dependency('org.spongepowered:mixin:.*'))
     }
 
-    classifier '' // Replace the default JAR
+    // classifier '' // Replace the default JAR
 
     manifest.attributes(
-            'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
-            'TweakOrder': 0,
-            'MixinConfigs': 'mixins.oldboosters.json',
-            'FMLCorePlugin': 'pw.kitl.oldboosters.mixin.MixinCorePlugin',
-            'ForceLoadAsMod': true, 
-            'FMLCorePluginContainsFMLMod': 'true'
+        'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
+        'TweakOrder': 0,
+        'MixinConfigs': 'mixins.oldboosters.json',
+        // 'ForceLoadAsMod': true
+    )
+}
+
+jar {
+    manifest.attributes(
+        'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
+        'TweakOrder': 0,
+        'MixinConfigs': 'mixins.oldboosters.json'
     )
 }
 
@@ -98,4 +104,12 @@ processResources {
 
 mixin {
     add sourceSets.main, "mixins.oldboosters.refmap.json"
+}
+
+runClient {
+    args = ['--tweakClass', 'org.spongepowered.asm.launch.MixinTweaker']
+}
+
+runServer {
+    args = ['--tweakClass', 'org.spongepowered.asm.launch.MixinTweaker']
 }
