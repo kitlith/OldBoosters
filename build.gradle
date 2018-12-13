@@ -67,7 +67,7 @@ shadowJar {
         'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
         'TweakOrder': 0,
         'MixinConfigs': 'mixins.oldboosters.json',
-        // 'ForceLoadAsMod': true
+        'ForceLoadAsMod': true
     )
 }
 
