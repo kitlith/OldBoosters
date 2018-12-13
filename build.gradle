@@ -108,8 +108,10 @@ mixin {
 
 runClient {
     args = ['--tweakClass', 'org.spongepowered.asm.launch.MixinTweaker']
+    outputs.upToDateWhen { false }
 }
 
 runServer {
     args = ['--tweakClass', 'org.spongepowered.asm.launch.MixinTweaker']
+    outputs.upToDateWhen { false }
 }
