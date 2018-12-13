@@ -8,16 +8,13 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 @Config(modid = OldBoostersMod.MODID)
-@Config.LangKey("oldboosters.config.title")
+@Config.LangKey("oldboosters.general")
 public class OldBoostersConfig {
-    @Config.Comment("Will new minecarts be boosters by default?")
     public static boolean defaultBoosters = true;
-    @Config.Comment("Will new minecarts not have a speed cap by default?")
     public static boolean defaultRemoveCap = true;
 
     @Mod.EventBusSubscriber
 	private static class EventHandler {
-
 		/**
 		 * Inject the new values and save to the config file when the config has been changed from the GUI.
 		 *

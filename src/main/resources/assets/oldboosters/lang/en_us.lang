@@ -1,5 +1,8 @@
 # Config GUI strings
 oldboosters.config.title=Old Boosters Config
 
-oldboosters.general.defaultBoosters=Default Boosters
-oldboosters.general.defaultBoosters.tooltip=This option decides whether new minecarts are boosters or not.
+oldboosters.general.defaultboosters=Default Boosters
+oldboosters.general.defaultboosters.tooltip=This option decides whether new minecarts have the booster bug.
+
+oldboosters.general.defaultremovecap=Remove Speed Cap
+oldboosters.general.defaultremovecap.tooltip=This option decides whether new minecarts have their speed cap removed.
