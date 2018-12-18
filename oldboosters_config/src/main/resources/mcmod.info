@@ -1,7 +1,7 @@
 [
 {
-  "modid": "oldboosters_core",
-  "name": "Old Boosters Core",
+  "modid": "oldboosters",
+  "name": "Old Boosters Mod",
   "description": "Bring back the old minecart boosters.",
   "version": "${version}",
   "mcversion": "${mcversion}",

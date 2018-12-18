@@ -14,7 +14,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
 
-import pw.kitl.oldboosters.OldBoostersMod;
 import pw.kitl.oldboosters.OldBoostersConfig;
 
 @Mixin(EntityMinecart.class)

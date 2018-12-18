@@ -13,38 +13,59 @@ buildscript {
         classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.3'
     }
 }
-apply plugin: 'com.github.johnrengelman.shadow'
-apply plugin: 'net.minecraftforge.gradle.forge'
-apply plugin: 'org.spongepowered.mixin'
 
-repositories {
-    maven {
-        name = 'sponge'
-        url = "https://repo.spongepowered.org/maven"
+allprojects {
+    apply plugin: 'net.minecraftforge.gradle.forge'
+    version = "1.0"
+    group = "pw.kitl.oldboosters"
+
+    repositories {
+        maven {
+            name = 'sponge'
+            url = "https://repo.spongepowered.org/maven"
+        }
+    }
+
+    sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
+    compileJava {
+        sourceCompatibility = targetCompatibility = '1.8'
+    }
+
+    minecraft {
+        version = "1.12.2-14.23.5.2768"
+        runDir = "run"
+
+        // the mappings can be changed at any time, and must be in the following format.
+        // snapshot_YYYYMMDD   snapshot are built nightly.
+        // stable_#            stables are built at the discretion of the MCP team.
+        // Use non-default mappings at your own risk. they may not always work.
+        // simply re-run your setup task after changing the mappings to update your workspace.
+        mappings = "snapshot_20171003"
+        // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
+    }
+
+    processResources {
+        // this will ensure that this task is redone when the versions change.
+        inputs.property "version", project.version
+        inputs.property "mcversion", project.minecraft.version
+
+        // replace stuff in mcmod.info, nothing else
+        from(sourceSets.main.resources.srcDirs) {
+            include 'mcmod.info'
+
+            // replace version and mcversion
+            expand 'version':project.version, 'mcversion':project.minecraft.version
+        }
+
+        // copy everything else except the mcmod.info
+        from(sourceSets.main.resources.srcDirs) {
+            exclude 'mcmod.info'
+        }
     }
 }
 
-version = "1.0"
-group = "pw.kitl.oldboosters" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "oldboosters"
-
-sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
-compileJava {
-    sourceCompatibility = targetCompatibility = '1.8'
-}
-
-minecraft {
-    version = "1.12.2-14.23.5.2768"
-    runDir = "run"
-
-    // the mappings can be changed at any time, and must be in the following format.
-    // snapshot_YYYYMMDD   snapshot are built nightly.
-    // stable_#            stables are built at the discretion of the MCP team.
-    // Use non-default mappings at your own risk. they may not always work.
-    // simply re-run your setup task after changing the mappings to update your workspace.
-    mappings = "snapshot_20171003"
-    // makeObfSourceJar = false // an Srg named sources jar is made by default. uncomment this to disable.
-}
+apply plugin: 'com.github.johnrengelman.shadow'
+apply plugin: 'org.spongepowered.mixin'
 
 dependencies {
     compile('org.spongepowered:mixin:0.7.11-SNAPSHOT') {
@@ -53,9 +74,25 @@ dependencies {
         exclude module: 'gson'
         exclude module: 'commons-io'
     }
+
+    runtimeOnly(project(':oldboosters_config'))
+}
+
+project(":oldboosters_config") {
+    dependencies {
+        compile(project(":"))
+    }
+}
+
+task shadowBugWorkaround(type: Jar) {
+    dependsOn tasks.getByPath(':oldboosters_config:build')
+    destinationDir file('build/shadow-bug-workaround')
+    baseName = 'nested-content'
+    from tasks.getByPath(':oldboosters_config:jar')
 }
 
 shadowJar {
+    dependsOn shadowBugWorkaround
     // Only shadow mixin
     dependencies {
         include(dependency('org.spongepowered:mixin:.*'))
@@ -67,8 +104,11 @@ shadowJar {
         'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
         'TweakOrder': 0,
         'MixinConfigs': 'mixins.oldboosters.json',
+        'ContainedDeps': tasks.getByPath(':oldboosters_config:jar').getOutputs().getFiles().getSingleFile().getName(),
         'ForceLoadAsMod': true
     )
+
+    from shadowBugWorkaround
 }
 
 jar {
@@ -83,35 +123,18 @@ reobf {
     shadowJar {} // Reobfuscate the shadowed JAR
 }
 
-processResources {
-    // this will ensure that this task is redone when the versions change.
-    inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
-
-    // replace stuff in mcmod.info, nothing else
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-
-        // replace version and mcversion
-        expand 'version':project.version, 'mcversion':project.minecraft.version
-    }
-
-    // copy everything else except the mcmod.info
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
-    }
-}
-
 mixin {
     add sourceSets.main, "mixins.oldboosters.refmap.json"
 }
 
 runClient {
     args = ['--tweakClass', 'org.spongepowered.asm.launch.MixinTweaker']
+    classpath(tasks.getByPath(':oldboosters_config:jar').getOutputs().getFiles().getAsPath())
     outputs.upToDateWhen { false }
 }
 
 runServer {
     args = ['--tweakClass', 'org.spongepowered.asm.launch.MixinTweaker']
+    classpath(tasks.getByPath(':oldboosters_config:jar').getOutputs().getFiles().getAsPath())
     outputs.upToDateWhen { false }
 }
