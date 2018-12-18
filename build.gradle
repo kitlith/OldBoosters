@@ -112,7 +112,7 @@ task packedJar(type: Jar) {
         from configurations.contained.files
     }
 
-    classifier = 'all'
+    classifier = 'all-unsigned'
     //with jar
 }
 
@@ -122,6 +122,8 @@ jar {
         'TweakOrder': 0,
         'MixinConfigs': 'mixins.oldboosters.json'
     )
+
+    classifier = 'unsigned'
 }
 
 reobf {
@@ -131,6 +133,34 @@ reobf {
 mixin {
     add sourceSets.main, "mixins.oldboosters.refmap.json"
 }
+
+task signJar(type: SignJar, dependsOn: reobfJar) {
+    onlyIf { // Skip the task if our secret data isn't available
+        project.hasProperty('keyStore')
+    }
+
+    keyStore = project.keyStore // This needs to be a path to the keystore file
+    alias = project.keyStoreAlias
+    storePass = project.keyStorePass
+    keyPass = project.keyStoreKeyPass
+    inputFile = jar.archivePath
+    outputFile = new File(jar.archivePath.parent, jar.archivePath.name.replace('-unsigned', ''))
+}
+
+task signPackedJar(type: SignJar, dependsOn: reobfPackedJar) {
+    onlyIf { // Skip the task if our secret data isn't available
+        project.hasProperty('keyStore')
+    }
+
+    keyStore = project.keyStore // This needs to be a path to the keystore file
+    alias = project.keyStoreAlias
+    storePass = project.keyStorePass
+    keyPass = project.keyStoreKeyPass
+    inputFile = packedJar.archivePath
+    outputFile = new File(jar.archivePath.parent, packedJar.archivePath.name.replace('-unsigned', ''))
+}
+
+build.dependsOn(signJar, signPackedJar)
 
 runClient {
     dependsOn tasks.getByPath(':oldboosters_config:jar')
