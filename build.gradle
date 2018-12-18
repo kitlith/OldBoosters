@@ -82,6 +82,10 @@ project(":oldboosters_config") {
     dependencies {
         compile(project(":"))
     }
+
+    runClient.outputs.upToDateWhen { true }
+
+    runServer.outputs.upToDateWhen { true }
 }
 
 task shadowBugWorkaround(type: Jar) {
@@ -128,12 +132,14 @@ mixin {
 }
 
 runClient {
+    dependsOn tasks.getByPath(':oldboosters_config:jar')
     args = ['--tweakClass', 'org.spongepowered.asm.launch.MixinTweaker']
     classpath(tasks.getByPath(':oldboosters_config:jar').getOutputs().getFiles().getAsPath())
     outputs.upToDateWhen { false }
 }
 
 runServer {
+    dependsOn tasks.getByPath(':oldboosters_config:jar')
     args = ['--tweakClass', 'org.spongepowered.asm.launch.MixinTweaker']
     classpath(tasks.getByPath(':oldboosters_config:jar').getOutputs().getFiles().getAsPath())
     outputs.upToDateWhen { false }
