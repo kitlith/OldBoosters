@@ -10,7 +10,6 @@ buildscript {
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
         classpath 'org.spongepowered:mixingradle:0.6-SNAPSHOT'
-        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.3'
     }
 }
 
@@ -64,18 +63,25 @@ allprojects {
     }
 }
 
-apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'org.spongepowered.mixin'
 
+configurations {
+    containedCompile
+    compile.extendsFrom containedCompile
+    contained.extendsFrom containedCompile
+}
+
 dependencies {
-    compile('org.spongepowered:mixin:0.7.11-SNAPSHOT') {
+    containedCompile('org.spongepowered:mixin:0.7.11-SNAPSHOT') {
         exclude module: 'launchwrapper'
         exclude module: 'guava'
         exclude module: 'gson'
         exclude module: 'commons-io'
     }
 
-    runtimeOnly(project(':oldboosters_config'))
+    contained(project(':oldboosters_config')) {
+        transitive = false
+    }
 }
 
 project(":oldboosters_config") {
@@ -83,36 +89,31 @@ project(":oldboosters_config") {
         compile(project(":"))
     }
 
-    runClient.outputs.upToDateWhen { true }
-
-    runServer.outputs.upToDateWhen { true }
+    runClient.enabled = false
+    runServer.enabled = false
 }
 
-task shadowBugWorkaround(type: Jar) {
-    dependsOn tasks.getByPath(':oldboosters_config:build')
-    destinationDir file('build/shadow-bug-workaround')
-    baseName = 'nested-content'
-    from tasks.getByPath(':oldboosters_config:jar')
+ext.getContainedDeps = { ->
+    configurations.contained.files.collect {it.getName()}.join(' ')
 }
 
-shadowJar {
-    dependsOn shadowBugWorkaround
-    // Only shadow mixin
-    dependencies {
-        include(dependency('org.spongepowered:mixin:.*'))
-    }
-
-    // classifier '' // Replace the default JAR
-
+task packedJar(type: Jar) {
+    dependsOn('reobfJar', ':oldboosters_config:build')
     manifest.attributes(
         'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
         'TweakOrder': 0,
         'MixinConfigs': 'mixins.oldboosters.json',
-        'ContainedDeps': tasks.getByPath(':oldboosters_config:jar').getOutputs().getFiles().getSingleFile().getName(),
-        'ForceLoadAsMod': true
+        'ContainedDeps': getContainedDeps()
     )
 
-    from shadowBugWorkaround
+    into '/'
+    from sourceSets.main.output
+    into("META-INF/libraries/") {
+        from configurations.contained.files
+    }
+
+    classifier = 'all'
+    //with jar
 }
 
 jar {
@@ -124,7 +125,7 @@ jar {
 }
 
 reobf {
-    shadowJar {} // Reobfuscate the shadowed JAR
+    packedJar {} // Reobfuscate the packed JAR
 }
 
 mixin {
