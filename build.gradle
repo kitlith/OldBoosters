@@ -10,6 +10,7 @@ buildscript {
     dependencies {
         classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
         classpath 'org.spongepowered:mixingradle:0.6-SNAPSHOT'
+        classpath 'com.github.jengelman.gradle.plugins:shadow:4.0.3'
     }
 }
 
@@ -63,16 +64,15 @@ allprojects {
     }
 }
 
+apply plugin: 'com.github.johnrengelman.shadow'
 apply plugin: 'org.spongepowered.mixin'
 
 configurations {
-    containedCompile
-    compile.extendsFrom containedCompile
-    contained.extendsFrom containedCompile
+    contained
 }
 
 dependencies {
-    containedCompile('org.spongepowered:mixin:0.7.11-SNAPSHOT') {
+    compile('org.spongepowered:mixin:0.7.11-SNAPSHOT') {
         exclude module: 'launchwrapper'
         exclude module: 'guava'
         exclude module: 'gson'
@@ -97,23 +97,33 @@ ext.getContainedDeps = { ->
     configurations.contained.files.collect {it.getName()}.join(' ')
 }
 
-task packedJar(type: Jar) {
-    dependsOn('reobfJar', ':oldboosters_config:build')
+task shadowBugWorkaround(type: Jar) {
+    dependsOn tasks.getByPath(':oldboosters_config:build')
+    destinationDir file('build/shadow-bug-workaround')
+    baseName = 'nested-content'
+    into("META-INF/libraries/") {
+        from configurations.contained.files
+    }
+}
+
+shadowJar {
+    dependsOn shadowBugWorkaround
+    // Only shadow mixin
+    dependencies {
+        include(dependency('org.spongepowered:mixin:.*'))
+    }
+
+    classifier 'all-unsigned'
+
     manifest.attributes(
         'TweakClass': 'org.spongepowered.asm.launch.MixinTweaker',
         'TweakOrder': 0,
         'MixinConfigs': 'mixins.oldboosters.json',
-        'ContainedDeps': getContainedDeps()
+        'ContainedDeps': getContainedDeps(),
+        'ForceLoadAsMod': true
     )
 
-    into '/'
-    from sourceSets.main.output
-    into("META-INF/libraries/") {
-        from configurations.contained.files
-    }
-
-    classifier = 'all-unsigned'
-    //with jar
+    from shadowBugWorkaround
 }
 
 jar {
@@ -123,44 +133,38 @@ jar {
         'MixinConfigs': 'mixins.oldboosters.json'
     )
 
-    classifier = 'unsigned'
+    classifier 'unsigned'
 }
 
 reobf {
-    packedJar {} // Reobfuscate the packed JAR
+    shadowJar {} // Reobfuscate the shadowed JAR
 }
 
 mixin {
     add sourceSets.main, "mixins.oldboosters.refmap.json"
 }
 
-task signJar(type: SignJar, dependsOn: reobfJar) {
-    onlyIf { // Skip the task if our secret data isn't available
-        project.hasProperty('keyStore')
+if (project.hasProperty('keyStore')) {
+    task signJar(type: SignJar, dependsOn: reobfJar) {
+        keyStore = project.keyStore // This needs to be a path to the keystore file
+        alias = project.alias
+        storePass = project.storePass
+        keyPass = project.keyPass
+        inputFile = jar.archivePath
+        outputFile = new File(jar.archivePath.parent, jar.archivePath.name.replace('-unsigned', ''))
     }
 
-    keyStore = project.keyStore // This needs to be a path to the keystore file
-    alias = project.keyStoreAlias
-    storePass = project.keyStorePass
-    keyPass = project.keyStoreKeyPass
-    inputFile = jar.archivePath
-    outputFile = new File(jar.archivePath.parent, jar.archivePath.name.replace('-unsigned', ''))
-}
-
-task signPackedJar(type: SignJar, dependsOn: reobfPackedJar) {
-    onlyIf { // Skip the task if our secret data isn't available
-        project.hasProperty('keyStore')
+    task signShadowJar(type: SignJar, dependsOn: reobfShadowJar) {
+        keyStore = project.keyStore // This needs to be a path to the keystore file
+        alias = project.alias
+        storePass = project.storePass
+        keyPass = project.keyPass
+        inputFile = shadowJar.archivePath
+        outputFile = new File(jar.archivePath.parent, shadowJar.archivePath.name.replace('-unsigned', ''))
     }
 
-    keyStore = project.keyStore // This needs to be a path to the keystore file
-    alias = project.keyStoreAlias
-    storePass = project.keyStorePass
-    keyPass = project.keyStoreKeyPass
-    inputFile = packedJar.archivePath
-    outputFile = new File(jar.archivePath.parent, packedJar.archivePath.name.replace('-unsigned', ''))
+    build.dependsOn(signJar, signShadowJar)
 }
-
-build.dependsOn(signJar, signPackedJar)
 
 runClient {
     dependsOn tasks.getByPath(':oldboosters_config:jar')
