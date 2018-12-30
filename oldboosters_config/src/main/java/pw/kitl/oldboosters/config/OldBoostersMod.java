@@ -1,4 +1,4 @@
-package pw.kitl.oldboosters;
+package pw.kitl.oldboosters.config;
 
 import net.minecraft.init.Blocks;
 import net.minecraftforge.fml.common.Mod;
@@ -11,6 +11,8 @@ import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.ConfigManager;
 import org.apache.logging.log4j.Logger;
 
+import java.lang.NoClassDefFoundError;
+
 import pw.kitl.oldboosters.OldBoostersConfig;
 
 @Mod(modid = OldBoostersMod.MODID, name = OldBoostersMod.NAME, version = OldBoostersMod.VERSION, acceptableRemoteVersions = "*")
@@ -19,11 +21,11 @@ public class OldBoostersMod {
     public static final String NAME = "Old Boosters Mod";
     public static final String VERSION = "1.1";
 
-    // private static Logger logger;
+    public static Logger logger;
 
     @EventHandler
     public void preInit(final FMLPreInitializationEvent event) {
-        // logger = event.getModLog();
+        logger = event.getModLog();
         OldBoostersForgeConfig.syncConfig();
     }
 }
@@ -51,7 +53,11 @@ class OldBoostersForgeConfig {
     }
 
     public static void syncConfig() {
-        OldBoostersConfig.defaultBoosters = defaultBoosters;
-        OldBoostersConfig.defaultRemoveCap = defaultRemoveCap;
+        // try {
+            OldBoostersConfig.defaultBoosters = defaultBoosters;
+            OldBoostersConfig.defaultRemoveCap = defaultRemoveCap;
+        // } catch (NoClassDefFoundError blah) {
+        //     OldBoostersMod.logger.error("Coremod not found!");
+        // }
     }
 }
