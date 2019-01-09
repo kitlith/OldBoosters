@@ -1,0 +1,17 @@
+{
+  "id": "oldboosters",
+  "name": "Old Boosters",
+  "description": "Bring back the old minecart boosters.",
+  "version": "1.0.0",
+  "side": "universal",
+  "initializers": [
+    //"net.fabricmc.example.ExampleMod"
+  ],
+  "requires": {
+    //"fabric": "*"
+  },
+  "mixins": {
+    //"client": "oldboosters.client.json",
+    "common": "oldboosters.common.json"
+  }
+}
