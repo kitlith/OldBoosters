@@ -1,0 +1,11 @@
+{
+    "required": true,
+    "package": "pw.kitl.oldboosters.mixin",
+    "compatibilityLevel": "JAVA_8",
+    "mixins": [
+        "AbstractMinecartEntityMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    }
+}

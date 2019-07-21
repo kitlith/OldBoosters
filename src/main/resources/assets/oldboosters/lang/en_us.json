@@ -1,0 +1,8 @@
+{
+	"text.autoconfig.oldboosters.title": "Old Boosters Config",
+	"text.autoconfig.oldboosters.category.default": "Default",
+	"text.autoconfig.oldboosters.option.defaultBoosters": "Enable Boosters",
+	"text.autoconfig.oldboosters.option.defaultInfCap": "Disable 'Speed' Cap",
+	"text.autoconfig.oldboosters.option.defaultCap": "'Speed' Cap Value",
+	"text.autoconfig.oldboosters.option.defaultCap.@Tooltip": "The value used for the speed cap when it isn't disabled."
+}

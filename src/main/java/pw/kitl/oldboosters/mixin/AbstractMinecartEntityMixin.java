@@ -14,6 +14,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.Constant;
 import org.spongepowered.asm.mixin.injection.ModifyConstant;
+import me.sargunvohra.mcmods.autoconfig1.AutoConfig;
 
 import pw.kitl.oldboosters.OldBoostersConfig;
 
@@ -25,19 +26,30 @@ public abstract class AbstractMinecartEntityMixin extends Entity {
         super(type, world);
     }
 
-    private boolean boosterEnabled = OldBoostersConfig.defaultBoosters;
-    private boolean capRemoved = OldBoostersConfig.defaultRemoveCap;
+    private boolean boosterEnabled;
+    private boolean capRemoved;
+    private double speedCap;
+
+    @Inject(method = "<init>", at = @At("RETURN"))
+    protected void initDefaults(CallbackInfo ci) {
+        OldBoostersConfig config = AutoConfig.getConfigHolder(OldBoostersConfig.class).getConfig();
+        boosterEnabled = config.defaultBoosters;
+        capRemoved = config.defaultInfCap;
+        speedCap = config.defaultCap;
+    }
 
     @Inject(method = "readCustomDataFromTag", at = @At("HEAD"))
     protected void readEntityFromNBT(CompoundTag compound, CallbackInfo ci) {
         boosterEnabled = compound.getBoolean("EnableBoosters");
         capRemoved = compound.getBoolean("RemoveCap");
+        speedCap = compound.getDouble("SpeedCap");
     }
 
     @Inject(method = "writeCustomDataToTag", at = @At("HEAD"))
     protected void writeEntityToNBT(CompoundTag compound, CallbackInfo ci) {
         compound.putBoolean("EnableBoosters", boosterEnabled);
         compound.putBoolean("RemoveCap", capRemoved);
+        compound.putDouble("SpeedCap", speedCap);
     }
 
     @ModifyConstant(method = "pushAwayFrom", constant = @Constant(doubleValue = 0.800000011920929D))
@@ -64,7 +76,7 @@ public abstract class AbstractMinecartEntityMixin extends Entity {
         if (capRemoved) {
             return Double.POSITIVE_INFINITY;
         } else {
-            return origConst;
+            return speedCap;
         }
     }
 }

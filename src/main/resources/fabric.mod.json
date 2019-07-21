@@ -1,17 +1,35 @@
 {
-  "id": "oldboosters",
-  "name": "Old Boosters",
-  "description": "Bring back the old minecart boosters.",
-  "version": "1.0.0",
-  "side": "universal",
-  "initializers": [
-    //"net.fabricmc.example.ExampleMod"
-  ],
-  "requires": {
-    //"fabric": "*"
-  },
-  "mixins": {
-    //"client": "oldboosters.client.json",
-    "common": "oldboosters.common.json"
-  }
+    "schemaVersion": 1,
+    "id": "oldboosters",
+    "version": "${version}",
+
+    "name": "Old Boosters",
+    "description": "Bring back the old minecart boosters.",
+    "authors": ["Kitlith"],
+    "contact": {
+        "sources": "https://github.com/kitlith/OldBoosters"
+    },
+
+    "license": "MIT",
+
+    "environment": "*",
+    "entrypoints": {
+        "main": [
+            "pw.kitl.oldboosters.OldBoostersInit"
+        ],
+        "modmenu": [
+            "pw.kitl.oldboosters.OldBoostersModMenuCompat"
+        ]
+    },
+
+    "mixins": [
+        "oldboosters.mixins.json"
+    ],
+
+    "requires": {
+        "fabricloader": ">=0.4.0",
+        "fabric-api-base": ">=0.1.0",
+        "fabric-api-resource-loader-v0": ">=0.1.0",
+        "clothconfig": ">=0.2.0"
+    }
 }
